@@ -11,6 +11,14 @@
 
 This small backend enables you to send ETH & Tokens to Ethereum based blockchains.
 
+## How to use it
+
+- Step #1: Fork the project and give it a star
+- Step #2: Copy the api_config.example.json to api_config.json and edit it with the link to your blockchain (you can use infura for rinkeby, main-net)
+- Step #3: Build & run with: go build -o server; ./server
+- Step #4: ??
+- Step #5: Profit!!!
+
 ## API's
 
 #### GET    /api/v1/
