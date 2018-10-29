@@ -85,4 +85,14 @@ curl --request PUT \
   --header 'Content-Type: application/json'
 ~~~~
 
+#### TODO:
+
+  - sanitize inputs
+  - docker ?
+  - any suggestions ?
+
+#### Thanks to:
+
+ https://github.com/hunterlong/tokenbalance for the tokens generic bindings.
+
 #### License: GPL-3.0
