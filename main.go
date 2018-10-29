@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/AndreiD/MiniBlockchainAPI/configs"
 	"github.com/AndreiD/MiniBlockchainAPI/helpers"

@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/AndreiD/MiniBlockchainAPI/helpers"
+	log "github.com/Sirupsen/logrus"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,30 +26,40 @@ func GetEthBalance(c *gin.Context) {
 	fbalance.SetString(balance.String())
 	ethValue := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
 
-	c.JSON(http.StatusOK, gin.H{"balance": ethValue, "currency": "ETH (POA)"})
+	log.Printf("Account %s has %s ETH\n", address, ethValue.String())
+	c.JSON(http.StatusOK, gin.H{"balance": ethValue, "currency": "ETH"})
 }
 
 // GetTokenBalance gets the balance for a token
 func GetTokenBalance(c *gin.Context) {
 
-	// contract := c.DefaultQuery("contract", "")
-	// address := c.DefaultQuery("address", "")
+	contract := c.DefaultQuery("contract", "")
+	address := c.DefaultQuery("address", "")
 
-	// instance, err := helpers.newTokenCaller(common.HexToAddress(contract), utils.RinkebyClient)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	tokenCaller, err := helpers.NewTokenCaller(common.HexToAddress(contract), helpers.ETHClient)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	// bal, err := instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress(address))
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	// gets the balance
+	bal, err := tokenCaller.BalanceOf(nil, common.HexToAddress(address))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	// fbalance := new(big.Float)
-	// fbalance.SetString(bal.String())
-	// decimalValue := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	// gets the symbol
+	symbol, err := tokenCaller.Symbol(nil)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	// c.JSON(http.StatusOK, gin.H{"balance": decimalValue, "currency": "CeCe Tokens"})
+	fbalance := new(big.Float)
+	fbalance.SetString(bal.String())
+	decimalValue := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+
+	log.Printf("Account %s has %s %s\n", address, decimalValue.String(), symbol)
+	c.JSON(http.StatusOK, gin.H{"balance": decimalValue, "currency": symbol})
 }
