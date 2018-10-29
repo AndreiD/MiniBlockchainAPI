@@ -1,0 +1,6 @@
+{
+  "port" : 9090,
+  "hostname" : "localhost",
+  "environment": "debug",
+  "node_address": "http://localhost:8545"
+}
