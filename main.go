@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/AndreiD/MiniBlockchainAPI/configs"
+	"github.com/AndreiD/MiniBlockchainAPI/helpers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/AndreiDD/tokenominatorapi/configs"
-	"gitlab.com/AndreiDD/tokenominatorapi/utils"
 )
 
 var router *gin.Engine
@@ -39,12 +39,12 @@ func main() {
 	InitializeRoutes()
 
 	fmt.Println("")
-	fmt.Println("████████╗ ██████╗ ██╗  ██╗███████╗███╗   ██╗ ██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ████████╗ ██████╗ ██████╗     ")
-	fmt.Println("╚══██╔══╝██╔═══██╗██║ ██╔╝██╔════╝████╗  ██║██╔═══██╗████╗ ████║██║████╗  ██║██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗    ")
-	fmt.Println("   ██║   ██║   ██║█████╔╝ █████╗  ██╔██╗ ██║██║   ██║██╔████╔██║██║██╔██╗ ██║███████║   ██║   ██║   ██║██████╔╝    ")
-	fmt.Println("   ██║   ██║   ██║██╔═██╗ ██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║██║██║╚██╗██║██╔══██║   ██║   ██║   ██║██╔══██╗    ")
-	fmt.Println("   ██║   ╚██████╔╝██║  ██╗███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║██║██║ ╚████║██║  ██║   ██║   ╚██████╔╝██║  ██║    ")
-	fmt.Println("   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝    ")
+	fmt.Println("███╗   ███╗██╗███╗   ██╗██╗")
+	fmt.Println("████╗ ████║██║████╗  ██║██║")
+	fmt.Println("██╔████╔██║██║██╔██╗ ██║██║")
+	fmt.Println("██║╚██╔╝██║██║██║╚██╗██║██║")
+	fmt.Println("██║ ╚═╝ ██║██║██║ ╚████║██║")
+	fmt.Println("╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝")
 	fmt.Println("")
 	fmt.Println("Version: 0.1")
 	fmt.Println("http://" + Config.GetString("hostname") + ":" + strconv.Itoa(Config.GetInt("port")) + "/api/v1/")
@@ -60,12 +60,7 @@ func main() {
 	server.SetKeepAlivesEnabled(true)
 
 	// Init the ETH Client
-	if err := utils.InitEthClient(Config.GetString("node_address")); err != nil {
-		log.Fatalf("cannot connect to the ETH provider. Please check if you have geth running: %s", err)
-	}
-
-	// Init the Rinkeby Client
-	if err := utils.InitRinkeByClient(); err != nil {
+	if err := helpers.InitEthClient(Config.GetString("node_address")); err != nil {
 		log.Fatalf("cannot connect to the ETH provider. Please check if you have geth running: %s", err)
 	}
 

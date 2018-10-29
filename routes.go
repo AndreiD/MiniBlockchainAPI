@@ -1,6 +1,6 @@
 package main
 
-import "gitlab.com/AndreiDD/tokenominatorapi/handlers"
+import "github.com/AndreiD/MiniBlockchainAPI/handlers"
 
 // InitializeRoutes initializes all the routes in the app
 func InitializeRoutes() {
@@ -15,25 +15,19 @@ func InitializeRoutes() {
 
 		//================ BALANCES ================
 
-		//shows the eth poa balance
-		v1.GET("/balance/eth_poa", handlers.GetETHPoaBalance)
-
-		//shows the eth poa balance
-		v1.GET("/balance/eth_rinkeby", handlers.GetETHRinkebyBalance)
+		//shows the eth balance
+		v1.GET("/balance/eth", handlers.GetEthBalance)
 
 		//shows the CeCe token balance
-		v1.GET("/balance/cece", handlers.GetCeCeBalance)
-
-		//shows the RP token balance
-		v1.GET("/balance/rp", handlers.GetRPBalance)
-
-		//shows the VIV token balance
-		v1.GET("/balance/viv", handlers.GetVIVBalance)
+		v1.GET("/balance/token", handlers.GetTokenBalance)
 
 		//================ Transactions ================
 
 		//send ETH POA to an address
-		v1.PUT("/tx/eth_poa", handlers.SendEthPOA)
+		v1.PUT("/tx/send_eth", handlers.SendEth)
+
+		//send Token to an address
+		v1.PUT("/tx/send_token", handlers.SendToken)
 
 	}
 }

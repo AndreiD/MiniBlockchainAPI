@@ -1,4 +1,4 @@
-package utils
+package helpers
 
 import (
 	"context"
@@ -11,13 +11,117 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/sha3"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/shopspring/decimal"
 )
 
-//GetBalance the balance in wei for a given address
+// SignAndSendTx - all the info you need for a transaction of ETH is here
+func SignAndSendTx(client *ethclient.Client, value *big.Int, toAddress string, senderPrivateKey string) (string, error) {
+
+	privateKey, err := crypto.HexToECDSA(senderPrivateKey)
+	if err != nil {
+		return "", fmt.Errorf("error reading from private key")
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return "", fmt.Errorf("error getting publicKey")
+	}
+
+	gasLimit := uint64(55723)          // in units
+	gasPrice := big.NewInt(1000000000) // 1 gwei
+
+	nonce, err := client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(*publicKeyECDSA))
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	tx := types.NewTransaction(nonce, common.HexToAddress(toAddress), value, gasLimit, gasPrice, nil)
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	err = client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	return signedTx.Hash().String(), nil
+}
+
+// SignAndSendTokenTx contains all you need to send a token
+func SignAndSendTokenTx(client *ethclient.Client, contractAddr string, amount *big.Int, toAddr string, senderPrivateKey string) (string, error) {
+
+	privateKey, err := crypto.HexToECDSA(senderPrivateKey)
+	if err != nil {
+		return "", fmt.Errorf("%s", "error reading from private key")
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return "", fmt.Errorf("%s", "error casting public key to ECDSA")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	toAddress := common.HexToAddress(toAddr)
+
+	tokenAddress := common.HexToAddress(contractAddr)
+
+	transferFnSignature := []byte("transfer(address,uint256)")
+	hash := sha3.NewKeccak256()
+	hash.Write(transferFnSignature)
+	methodID := hash.Sum(nil)[:4]
+
+	paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
+
+	paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
+	var data []byte
+	data = append(data, methodID...)
+	data = append(data, paddedAddress...)
+	data = append(data, paddedAmount...)
+
+	gasLimit := uint64(55723) // in units
+	gasPrice := big.NewInt(1000000000)
+
+	tx := types.NewTransaction(nonce, tokenAddress, big.NewInt(0), gasLimit, gasPrice, data)
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	err = client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		return "", fmt.Errorf("%s", err)
+	}
+
+	return signedTx.Hash().String(), nil
+}
+
+//GetWeiBalance the balance in wei for a given address
 func GetWeiBalance(address string, client *ethclient.Client) (*big.Int, error) {
 	account := common.HexToAddress(address)
 	balance, err := client.BalanceAt(context.Background(), account, nil)
@@ -252,4 +356,17 @@ func SigRSV(isig interface{}) ([32]byte, [32]byte, uint8) {
 	V := uint8(vI + 27)
 
 	return R, S, V
+}
+
+// ValidNumber returns a valid positive integer
+func ValidNumber(input string) *big.Int {
+	if input == "" {
+		return big.NewInt(0)
+	}
+	matched, err := regexp.MatchString("([0-9])", input)
+	if !matched || err != nil {
+		return nil
+	}
+	amount := math.MustParseBig256(input)
+	return amount.Abs(amount)
 }

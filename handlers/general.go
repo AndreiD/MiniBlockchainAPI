@@ -4,19 +4,19 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/AndreiD/MiniBlockchainAPI/helpers"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/AndreiDD/tokenominatorapi/utils"
 )
 
 // Index shows an info message
 func Index(c *gin.Context) {
 
-	blockNumber, err := utils.GetBlockNumber(utils.ETHClient)
+	blockNumber, err := helpers.GetBlockNumber(helpers.ETHClient)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	syncing, err := utils.IsSyncying(utils.ETHClient)
+	syncing, err := helpers.IsSyncying(helpers.ETHClient)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

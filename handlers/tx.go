@@ -6,15 +6,15 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/AndreiD/MiniBlockchainAPI/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/AndreiDD/tokenominatorapi/utils"
 )
 
-// SendEthPOA sends ETH POA
-func SendEthPOA(c *gin.Context) {
+// SendEth sends ETH
+func SendEth(c *gin.Context) {
 
 	toAddress := c.DefaultQuery("to_address", "")
 
@@ -33,7 +33,7 @@ func SendEthPOA(c *gin.Context) {
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := utils.ETHClient.PendingNonceAt(context.Background(), fromAddress)
+	nonce, err := helpers.ETHClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err, "where": ">> getting PendingNonceAt"})
 		return
@@ -46,7 +46,7 @@ func SendEthPOA(c *gin.Context) {
 	var data []byte //nil
 	tx := types.NewTransaction(nonce, common.HexToAddress(toAddress), value, gasLimit, gasPrice, data)
 
-	chainID, err := utils.ETHClient.NetworkID(context.Background())
+	chainID, err := helpers.ETHClient.NetworkID(context.Background())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err, "where": ">> getting chainID"})
 		return
@@ -58,12 +58,38 @@ func SendEthPOA(c *gin.Context) {
 		return
 	}
 
-	err = utils.ETHClient.SendTransaction(context.Background(), signedTx)
+	err = helpers.ETHClient.SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err, "where": ">> SendTransaction"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"amount": value, "currency": "wei (POA)", "hash": signedTx.Hash().String()})
+
+}
+
+// SendToken sends tokens
+func SendToken(c *gin.Context) {
+
+	// this is the private key for sender's account 0x5d924b2d34643b4eb7d4291fdcb07236963f040f
+	const senderPrivateKey = "908550C596A682C500FE1013EB3CEB5A8421FC62D6FF1F81CCDFEDD69768E560"
+	const contractAddress = "0xabf59761226e415511ae828803cdf96142c31e89"
+
+	toAddress := c.DefaultQuery("to_address", "")
+	_amount := c.DefaultQuery("amount", "")
+	amount := new(big.Int)
+	amount, ok := amount.SetString(_amount, 10)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid number"})
+		return
+	}
+
+	hash, err := helpers.SignAndSendTokenTx(helpers.ETHClient, contractAddress, amount, toAddress, senderPrivateKey)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"amount": amount, "currency": "VIV Tokens", "hash": hash})
 
 }

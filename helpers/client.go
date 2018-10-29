@@ -1,4 +1,4 @@
-package utils
+package helpers
 
 import (
 	"fmt"
@@ -14,9 +14,6 @@ var ETHClient *ethclient.Client
 
 // RPCClient the rpc client
 var RPCClient *rpc.Client
-
-// RinkebyClient the eth client
-var RinkebyClient *ethclient.Client
 
 // InitEthClient initializez the the client
 func InitEthClient(url string) error {
@@ -45,22 +42,6 @@ func InitRPCClient(url string) error {
 	}
 	fmt.Printf("Connected to the ETH RPC provider: %s\n", url)
 	RPCClient = rpcClient
-	return nil
-
-}
-
-// InitRinkeByClient - just hardcode it
-func InitRinkeByClient() error {
-
-	ethClient, err := ethclient.Dial("https://rinkeby.infura.io/2wIEW5lLyEaefGEPhoxX ")
-
-	if err != nil {
-		log.Errorf("Failed to connect to the ETH client: %v", err)
-		return err
-	}
-
-	RinkebyClient = ethClient
-	fmt.Println("Connected to the ETH provider: Rinkeby")
 	return nil
 
 }
