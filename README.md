@@ -19,6 +19,11 @@ This small backend enables you to send ETH & Tokens to Ethereum based blockchain
 - Step #4: ??
 - Step #5: Profit!!!
 
+## Note about security:
+
+- This script should run on localhost and not be exposed.
+- If you need to expose it, make a reverse nginx proxy and configure it for https!
+
 ## API's
 
 #### GET    /api/v1/
